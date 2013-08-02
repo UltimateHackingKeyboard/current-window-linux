@@ -22,7 +22,6 @@ int main(int argc, char** argv)
     unsigned long bytes_after;
     unsigned char *prop;
     int status;
-    long unsigned int windowId;
     Atom filter_atom;
 
     display = XOpenDisplay(display_name);
@@ -30,19 +29,19 @@ int main(int argc, char** argv)
         fprintf (stderr, "%s:  unable to open display '%s'\n", argv[0], XDisplayName (display_name));
     }
     int screen = XDefaultScreen(display);
-    Window window = RootWindow(display, screen);
+    long unsigned int root_window = RootWindow(display, screen);
 
     filter_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
-    status = XGetWindowProperty(display, window, filter_atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-    windowId = get_float_property(prop);
+    status = XGetWindowProperty(display, root_window, filter_atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    long unsigned int application_window = get_float_property(prop);
 
-    atoms = XListProperties(display, windowId, &count);
+    atoms = XListProperties(display, application_window, &count);
 
     for (i = 0; i < count; i++) {
         atom = atoms+i;
-        status = XGetWindowProperty(display, windowId, *atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+        status = XGetWindowProperty(display, application_window, *atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
         if (status == BadWindow) {
-            printf("window id # 0x%lx does not exists!", window);
+            printf("window id # 0x%lx does not exists!", application_window);
         }
 
         if (status != Success) {
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
 
     XCloseDisplay (display );
 
-    return 0; 
+    return 0;
 
 }
 // _NET_ACTIVE_WINDOW
