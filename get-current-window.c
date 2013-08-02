@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     unsigned long nitems;
     unsigned long bytes_after;
     unsigned char *prop;
+    unsigned char *prop2;
 
     display = XOpenDisplay(display_name);
     if (display == NULL) {
@@ -46,6 +47,12 @@ int main(int argc, char** argv)
     status = XGetWindowProperty(display, root_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     check_status(status, root_window);
     unsigned long application_window = get_float_property(prop);
+
+    filter_atom = XInternAtom(display, "_NET_WM_PID", True);
+    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop2);
+    check_status(status, application_window);
+    unsigned long application_pid = get_float_property(prop2);
+    printf("pid:%lu\n", application_pid);
 
     atoms = XListProperties(display, application_window, &count);
 
