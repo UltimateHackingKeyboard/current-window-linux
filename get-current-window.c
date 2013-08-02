@@ -27,8 +27,7 @@ int main(int argc, char** argv)
 {
     char *display_name = NULL;  // could be the value of $DISPLAY
     Display *display;
-    Atom *atoms, *atom, actual_type, filter_atom;
-    int count, i;
+    Atom actual_type, filter_atom;
     int actual_format;
     int status;
     unsigned long nitems;
@@ -51,31 +50,18 @@ int main(int argc, char** argv)
     status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     check_status(status, application_window);
     unsigned long application_pid = get_float_property(prop);
-    printf("pid:%lu\n", application_pid);
+    printf("pid: %lu\n", application_pid);
 
     filter_atom = XInternAtom(display, "WM_CLASS", True);
     status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     check_status(status, application_window);
-    printf("WM_CLASS:%s\n", prop);
+    printf("WM_CLASS: %s\n", prop);
 
-    atoms = XListProperties(display, application_window, &count);
-
-    for (i=0; i<count; i++) {
-        atom = atoms + i;
-        status = XGetWindowProperty(display, application_window, *atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-        check_status(status, application_window);
-
-        printf("* property:%39s | propertyName:%s\n  atom:%s | actual_format:%i | nitems:%lu | bytes_after:%lu\n",
-                XGetAtomName(display, *atom), prop, XGetAtomName(display, actual_type), actual_format, nitems, bytes_after);
-    }
-//    XA_WM_ICON_NAME
-//    _NET_WM_PID(CARDINAL) = 6379
-//    WM_CLASS(STRING) = "Tomboy", "Tomboy"
-//	XFree(name);
+    filter_atom = XInternAtom(display, "_NET_WM_NAME", True);
+    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    check_status(status, application_window);
+    printf("_NET_WM_NAME :%s\n", prop);
 
     XCloseDisplay (display );
-
     return 0;
-
 }
-// _NET_ACTIVE_WINDOW
