@@ -53,6 +53,11 @@ int main(int argc, char** argv)
     unsigned long application_pid = get_float_property(prop);
     printf("pid:%lu\n", application_pid);
 
+    filter_atom = XInternAtom(display, "WM_CLASS", True);
+    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    check_status(status, application_window);
+    printf("WM_CLASS:%s\n", prop);
+
     atoms = XListProperties(display, application_window, &count);
 
     for (i=0; i<count; i++) {
