@@ -2,7 +2,7 @@
 #include <X11/Xatom.h>
 #include <stdio.h>
 
-#define MAXSTR 500000
+#define MAXSTR 1000
 
 long unsigned int get_float_property(unsigned char *property)
 {
@@ -32,14 +32,14 @@ int main(int argc, char** argv)
     long unsigned int root_window = RootWindow(display, screen);
 
     filter_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
-    status = XGetWindowProperty(display, root_window, filter_atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    status = XGetWindowProperty(display, root_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     long unsigned int application_window = get_float_property(prop);
 
     atoms = XListProperties(display, application_window, &count);
 
     for (i = 0; i < count; i++) {
         atom = atoms+i;
-        status = XGetWindowProperty(display, application_window, *atom, 0, (MAXSTR+3)/4, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+        status = XGetWindowProperty(display, application_window, *atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
         if (status == BadWindow) {
             printf("window id # 0x%lx does not exists!", application_window);
         }
