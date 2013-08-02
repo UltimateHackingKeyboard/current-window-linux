@@ -1,12 +1,26 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAXSTR 1000
 
 long unsigned int get_float_property(unsigned char *property)
 {
     return property[0] + (property[1]<<8) + (property[2]<<16) + (property[3]<<24);
+}
+
+void check_status(int status, unsigned long window)
+{
+    if (status == BadWindow) {
+        printf("window id # 0x%lx does not exists!", window);
+        exit(1);
+    }
+
+    if (status != Success) {
+        printf("XGetWindowProperty failed!");
+        exit(2);
+    }
 }
 
 int main(int argc, char** argv)
@@ -30,6 +44,7 @@ int main(int argc, char** argv)
 
     filter_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
     status = XGetWindowProperty(display, root_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    check_status(status, root_window);
     unsigned long application_window = get_float_property(prop);
 
     atoms = XListProperties(display, application_window, &count);
@@ -37,13 +52,7 @@ int main(int argc, char** argv)
     for (i=0; i<count; i++) {
         atom = atoms + i;
         status = XGetWindowProperty(display, application_window, *atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-        if (status == BadWindow) {
-            printf("window id # 0x%lx does not exists!", application_window);
-        }
-
-        if (status != Success) {
-            printf("XGetWindowProperty failed!");
-        }
+        check_status(status, application_window);
 
         printf("* property:%39s | propertyName:%s\n  atom:%s | actual_format:%i | nitems:%lu | bytes_after:%lu\n",
                 XGetAtomName(display, *atom), prop, XGetAtomName(display, actual_type), actual_format, nitems, bytes_after);
