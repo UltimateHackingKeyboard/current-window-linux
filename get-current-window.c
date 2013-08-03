@@ -7,11 +7,6 @@
 
 Display *display;
 unsigned long window;
-Atom actual_type, filter_atom;
-int actual_format;
-int status;
-unsigned long nitems;
-unsigned long bytes_after;
 unsigned char *prop;
 
 void check_status(int status, unsigned long window)
@@ -29,6 +24,12 @@ void check_status(int status, unsigned long window)
 
 unsigned char* get_string_property(char* property_name)
 {
+    Atom actual_type, filter_atom;
+    int actual_format;
+    int status;
+    unsigned long nitems;
+    unsigned long bytes_after;
+
     filter_atom = XInternAtom(display, property_name, True);
     status = XGetWindowProperty(display, window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     check_status(status, window);
@@ -58,6 +59,7 @@ int main(int argc, char** argv)
     printf("_NET_WM_PID: %lu\n", get_long_property("_NET_WM_PID"));
     printf("WM_CLASS: %s\n", get_string_property("WM_CLASS"));
     printf("_NET_WM_NAME: %s\n", get_string_property("_NET_WM_NAME"));
+
     XCloseDisplay (display );
     return 0;
 }
