@@ -5,10 +5,14 @@
 
 #define MAXSTR 1000
 
-long unsigned int get_float_property(unsigned char *property)
-{
-    return property[0] + (property[1]<<8) + (property[2]<<16) + (property[3]<<24);
-}
+Display *display;
+unsigned long window;
+Atom actual_type, filter_atom;
+int actual_format;
+int status;
+unsigned long nitems;
+unsigned long bytes_after;
+unsigned char *prop;
 
 void check_status(int status, unsigned long window)
 {
@@ -23,45 +27,37 @@ void check_status(int status, unsigned long window)
     }
 }
 
+unsigned char* get_string_property(char* property_name)
+{
+    filter_atom = XInternAtom(display, property_name, True);
+    status = XGetWindowProperty(display, window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    check_status(status, window);
+    return prop;
+}
+
+unsigned long get_long_property(char* property_name)
+{
+    get_string_property(property_name);
+    unsigned long long_property = prop[0] + (prop[1]<<8) + (prop[2]<<16) + (prop[3]<<24);
+    return long_property;
+}
+
 int main(int argc, char** argv)
 {
     char *display_name = NULL;  // could be the value of $DISPLAY
-    Display *display;
-    Atom actual_type, filter_atom;
-    int actual_format;
-    int status;
-    unsigned long nitems;
-    unsigned long bytes_after;
-    unsigned char *prop;
 
     display = XOpenDisplay(display_name);
     if (display == NULL) {
         fprintf (stderr, "%s:  unable to open display '%s'\n", argv[0], XDisplayName (display_name));
     }
     int screen = XDefaultScreen(display);
-    unsigned long root_window = RootWindow(display, screen);
+    window = RootWindow(display, screen);
 
-    filter_atom = XInternAtom(display, "_NET_ACTIVE_WINDOW", True);
-    status = XGetWindowProperty(display, root_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-    check_status(status, root_window);
-    unsigned long application_window = get_float_property(prop);
+    window = get_long_property("_NET_ACTIVE_WINDOW");
 
-    filter_atom = XInternAtom(display, "_NET_WM_PID", True);
-    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-    check_status(status, application_window);
-    unsigned long application_pid = get_float_property(prop);
-    printf("pid: %lu\n", application_pid);
-
-    filter_atom = XInternAtom(display, "WM_CLASS", True);
-    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-    check_status(status, application_window);
-    printf("WM_CLASS: %s\n", prop);
-
-    filter_atom = XInternAtom(display, "_NET_WM_NAME", True);
-    status = XGetWindowProperty(display, application_window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
-    check_status(status, application_window);
-    printf("_NET_WM_NAME :%s\n", prop);
-
+    printf("_NET_WM_PID: %lu\n", get_long_property("_NET_WM_PID"));
+    printf("WM_CLASS: %s\n", get_string_property("WM_CLASS"));
+    printf("_NET_WM_NAME: %s\n", get_string_property("_NET_WM_NAME"));
     XCloseDisplay (display );
     return 0;
 }
