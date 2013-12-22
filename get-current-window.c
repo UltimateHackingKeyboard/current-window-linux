@@ -25,13 +25,12 @@ void check_status(int status, unsigned long window)
 unsigned char* get_string_property(char* property_name)
 {
     Atom actual_type, filter_atom;
-    int actual_format;
-    int status;
-    unsigned long nitems;
-    unsigned long bytes_after;
+    int actual_format, status;
+    unsigned long nitems, bytes_after;
 
     filter_atom = XInternAtom(display, property_name, True);
-    status = XGetWindowProperty(display, window, filter_atom, 0, MAXSTR, False, AnyPropertyType, &actual_type, &actual_format, &nitems, &bytes_after, &prop);
+    status = XGetWindowProperty(display, window, filter_atom, 0, MAXSTR, False, AnyPropertyType,
+                                &actual_type, &actual_format, &nitems, &bytes_after, &prop);
     check_status(status, window);
     return prop;
 }
@@ -60,6 +59,6 @@ int main(int argc, char** argv)
     printf("WM_CLASS: %s\n", get_string_property("WM_CLASS"));
     printf("_NET_WM_NAME: %s\n", get_string_property("_NET_WM_NAME"));
 
-    XCloseDisplay (display );
+    XCloseDisplay(display);
     return 0;
 }
